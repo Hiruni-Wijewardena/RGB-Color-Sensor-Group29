@@ -32,11 +32,29 @@ double getnum()
 	
 	return num;
 }
+bool validate(int number1,int number2,int number3)
+{
+	if ((number1>255) || (number2>255) || (number3>255) )
+	{
+		LCD_Clear();
+		LCD_String_xy(0,0, "Enter numbers");
+		LCD_String_xy(1,0, "between 0-255");
+		_delay_ms(300);
+		LCD_Clear();
+		return false;
+	}
+	else
+	{
+		LCD_Clear();
+		LCD_String_xy(0,0, "DONE");
+		return true;
+	}
+}
  void input()
  {
  double valuer,valueg,valueb;
  char number[3];
- 
+ bool valid;
  
  valuer = getnum();
  
@@ -55,6 +73,8 @@ double getnum()
  LCD_String_xy (1, 0, "b=");
  LCD_String_xy (1, 3, number);
  _delay_ms(100);
+ 
+ valid =validate(valuer,valueg,valueb);
  }
 
 void calibrate()
