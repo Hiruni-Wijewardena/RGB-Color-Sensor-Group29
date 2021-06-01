@@ -2,8 +2,6 @@
 #include <avr/io.h>			/* Include AVR std. library file */
 #include <util/delay.h>			/* Include Delay header file */
 #include <stdlib.h>
-//#include <string.h>
-
 
 #define LCD_Dir  DDRB			/* Define LCD data port direction */
 #define LCD_Port PORTB			/* Define LCD data port */
@@ -13,28 +11,22 @@
 #define g PINC1
 #define b PINC2
 
-
-
 #include "LCD16x2_4bit.h"
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/pgmspace.h>
 
-
 #define KEY_PRT PORTD
 #define KEY_DDR	DDRD
 #define KEY_PIN	PIND
 
-
 int a = 0x80;
-
 char rl[5];
 char gl[5];
 char bl[5];
 char rh[5];
 char gh[5];
 char bh[5];
-
 int rli;
 int gli;
 int bli;
@@ -46,20 +38,13 @@ int rm;
 int gm;
 int bm;
 
-
-
 char key;
 unsigned char keypad[4][3] = {	{'1','2','3'},
 {'4','5','6'},
 {'7','8','9'},
 {'*','0','#'}};
-
 unsigned char colloc, rowloc;
-//using namespace std;
 
-
-
- 
 
 void LCD_Command( unsigned char cmnd )
 {
@@ -210,11 +195,6 @@ char keyfind()
 		else
 		return(keypad[rowloc][3]);
 	}
-	
-char aa(){
-	
-}
-
 
 int ADC_Read(char channel)
 {
@@ -233,94 +213,10 @@ int ADC_Read(char channel)
 	return(Ain);			/* Return digital value*/
 }
 
- 
- 
- 
-/*void cali(){
-	int value;
-	int delay =100;
-	LCD_Clear();
-	LCD_String("Calibrating...");
-
-	//DDRB = 0x00010000;
-	//DDRB = 0b00000100;
-	PORTC = (PORTC | 0b00010000);
-	_delay_ms(delay);
-	rli=ADC_Read(0);
-	itoa(rli,rl,10);
-
-
-	
-	//DDRB = 0x00001000;
-	PORTC = (PORTC | 0b00001000);
-	PORTC = (PORTC & 0b11101111);
-	_delay_ms(delay);
-	gli=ADC_Read(0);
-	itoa(gli,gl,10);
-	
-	//DDRB = 0x00000100;
-	PORTC = (PORTC | 0b00000100);
-	PORTC = (PORTC & 0b1110111);
-	_delay_ms(delay);
-	bli=ADC_Read(0);
-	itoa(bli,bl,10);
-	
-	
-	//DDRB = 0x00010000;
-	PORTC = (PORTC | 0b00010000);
-	PORTC = (PORTC & 0b11111011);
-	_delay_ms(delay);
-	rhi=ADC_Read(0);
-	itoa(rhi,rh,10);
-	
-	//DDRB = 0x00001000;
-	PORTC = (PORTC | 0b00001000);
-	PORTC = (PORTC & 0b11101111);
-	_delay_ms(delay);
-	ghi=ADC_Read(0);
-	itoa(ghi,gh,10);
-	
-	//DDRB = 0x00000100;
-	PORTC = (PORTC | 0b00000100);
-	PORTC = (PORTC & 0b11110111);
-	_delay_ms(delay);
-	bhi=ADC_Read(0);
-	itoa(bhi,bh,10);
-	PORTC = (PORTC & 0b11111011);
-	
-	LCD_Clear();
-	LCD_String(rl);
-	LCD_String("  ");
-	LCD_String(gl);
-	LCD_String("  ");
-	LCD_String(bl);
-	LCD_Command(0xC0);
-	LCD_String(rh);
-	LCD_String("  ");
-	LCD_String(gh);
-	LCD_String("  ");
-	LCD_String(bh);
-
-}	*/
-
 void sense(){
-	int delay =100;
-	int value;
-	int rr;
-	int gg;
-	int bb;
-	char rs[5];
-	char gs[5];
-	char bs[5];
-	char rrf[5];
-	char ggf[5];
-	char bbf[5];
-	
-	int rsi;
-	int gsi;
-	int bsi;
-	
-	
+	int delay =100,value,rr,gg,bb;
+	char rs[5],gs[5],bs[5],rrf[5],ggf[5],bbf[5];
+	int rsi,gsi,bsi;
 	
 	LCD_Clear();
 	LCD_String("Sensing...");
@@ -363,7 +259,6 @@ void sense(){
 	LCD_String("  ");	
 }
 
-
 void rgbl(int valuer,int valueg,int valueb){
 	DDRB|=((1<<PORTB3)|(1<<PORTB2));
 	DDRD|=(1<<PORTD3); //set OC0 pin as output/
@@ -375,7 +270,6 @@ void rgbl(int valuer,int valueg,int valueb){
 	TCCR2A = (1<<WGM20) | (1<<WGM21) | (1<<COM2A1)| (1<<COM2B1) ;
 	TCCR2B = (1<<CS20);
 }
-
 
 void test(){
 	char in[3]={'.','.','.'};
@@ -422,10 +316,8 @@ void test(){
 	
 void ADC_Init()
 {
-	
 	ADCSRA = 0b10000111;      // C1:: Enable ADC, pre-scaler = 128
-	ADMUX  = 0b01000000;
-	
+	ADMUX  = 0b01000000;	
 }
 
  void cali(){
@@ -471,12 +363,8 @@ void ADC_Init()
 		}else{
 		bm=val[0][2];
 	}
-	
-	
 }
 
-
- 
  
 int main()
 {
