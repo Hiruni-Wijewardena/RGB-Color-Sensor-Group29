@@ -118,9 +118,81 @@ bool validate(int number1,int number2,int number3)
 	 
 	 }
  }
+ int values()
+ {
+	 int num[3];
+	 ADC_Init();
+	 DDRC = 0b00001110;
+	 PORTC = 0b00000010;
+	 _delay_ms(100);
+	 num[0]=ADC_Read(0);
+	 PORTC = 0b00000100;
+	 _delay_ms(100);
+	 num[1]=ADC_Read(0);
+	 PORTC = 0b00001000;
+	 _delay_ms(100);
+	 num[2]=ADC_Read(0);
+	 PORTC = 0b00000000;
+	 
+	 return *num;
+	 
+	 
+ }
 
 void calibrate()
 {
+	int r[3],g[3],b[3];
+	int rmax,gmax,bmax,rmin,gmin,bmin;
+	int rr,rg,rb,gr,gg,gb,br,bg,bb;
+	char key;
+	LCD_String_xy (0, 0, "RED COLOUR");
+	_delay_ms(100);
+	LCD_Clear();
+	LCD_String_xy (0, 0, "Press 0 to start");
+	key = keyfind();
+	if (key=='0')
+	{
+		*r = values();
+		rr,rg,rb =r[0],r[1],r[2];
+	}
+	LCD_Clear();
+	LCD_String_xy (0, 0, "RED DONE");
+	_delay_ms(100);
+	LCD_Clear();
+	
+	LCD_String_xy (0, 0, "GREEN COLOUR");
+	_delay_ms(100);
+	LCD_Clear();
+	LCD_String_xy (0, 0, "Press 0 to start");
+	key = keyfind();
+	if (key=='0')
+	{
+		*g = values();
+		gr,gg,gb =g[0],g[1],g[2];
+	}
+	LCD_Clear();
+	LCD_String_xy (0, 0, "GREEN DONE");
+	_delay_ms(100);
+	LCD_Clear();
+	
+	LCD_String_xy (0, 0, "BLUE COLOUR");
+	_delay_ms(100);
+	LCD_Clear();
+	LCD_String_xy (0, 0, "Press 0 to start");
+	key = keyfind();
+	if (key=='0')
+	{
+		*b = values();
+		br,bg,bb =b[0],b[1],b[2];
+	}
+	LCD_Clear();
+	LCD_String_xy (0, 0, "BLUE DONE");
+	_delay_ms(100);
+	LCD_Clear();
+
+
+
+
 	
 }
 
@@ -160,7 +232,9 @@ int main(void)
 			
 		else if (mode == '3')
 			{
-			calibrate();	
+			LCD_Clear();
+			calibrate();
+			_delay_ms(300);	
 			}
 		else 
 			{
