@@ -13,10 +13,48 @@
 #include <math.h>
 
 
-
+double getnum()
+{
+	double num= 0;
+	char key;
+	double ikey;
+	double mult;
+	
+	for (double i=0;i<=2;i++)
+	{
+		
+		key=keyfind();
+		ikey = key-'0';
+		mult = pow(10,(2-i));
+		num+= mult*(ikey);
+		
+	}
+	
+	return num;
+}
  void input()
  {
+ double valuer,valueg,valueb;
+ char number[3];
  
+ 
+ valuer = getnum();
+ 
+ itoa (valuer,number,10);
+ LCD_String_xy (0, 0, "r=");
+ LCD_String_xy (0, 3, number);
+ 
+ valueg = getnum();
+ 
+ itoa (valueg,number,10);
+ LCD_String_xy (0, 8, "g=");
+ LCD_String_xy (0, 11, number);
+ 
+ valueb = getnum();
+ itoa (valueb,number,10);
+ LCD_String_xy (1, 0, "b=");
+ LCD_String_xy (1, 3, number);
+ _delay_ms(100);
  }
 
 void calibrate()
