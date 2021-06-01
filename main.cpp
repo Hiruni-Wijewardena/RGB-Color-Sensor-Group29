@@ -52,29 +52,47 @@ bool validate(int number1,int number2,int number3)
 }
  void input()
  {
- double valuer,valueg,valueb;
- char number[3];
- bool valid;
+	 double valuer,valueg,valueb;
+	 char number[3];
+	 bool valid;
  
- valuer = getnum();
+	 valuer = getnum();
  
- itoa (valuer,number,10);
- LCD_String_xy (0, 0, "r=");
- LCD_String_xy (0, 3, number);
+	 itoa (valuer,number,10);
+	 LCD_String_xy (0, 0, "r=");
+	 LCD_String_xy (0, 3, number);
  
- valueg = getnum();
+	 valueg = getnum();
  
- itoa (valueg,number,10);
- LCD_String_xy (0, 8, "g=");
- LCD_String_xy (0, 11, number);
+	 itoa (valueg,number,10);
+	 LCD_String_xy (0, 8, "g=");
+	 LCD_String_xy (0, 11, number);
  
- valueb = getnum();
- itoa (valueb,number,10);
- LCD_String_xy (1, 0, "b=");
- LCD_String_xy (1, 3, number);
- _delay_ms(100);
+	 valueb = getnum();
+	 itoa (valueb,number,10);
+	 LCD_String_xy (1, 0, "b=");
+	 LCD_String_xy (1, 3, number);
+	 _delay_ms(100);
  
- valid =validate(valuer,valueg,valueb);
+	 valid =validate(valuer,valueg,valueb);
+	 if (valid == false)
+	 {
+		 input();
+	 }
+	 else if (valid == true)
+	 {
+	 
+		 DDRB|=((1<<PORTB3)|(1<<PORTB2));
+		 DDRD|=(1<<PORTD3); /*set OC0 pin as output*/
+		 OCR1B = valuer;
+		 OCR2A =valueg;
+		 OCR2B = valueb;
+		 TCCR1A = (1<<WGM10) | (1<<COM1B1) ;
+		 TCCR1B = (1<<CS10) | (1<<WGM12);
+		 TCCR2A = (1<<WGM20) | (1<<WGM21) | (1<<COM2A1)| (1<<COM2B1) ;
+		 TCCR2B = (1<<CS20);
+	 
+	 }
  }
 
 void calibrate()
