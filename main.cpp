@@ -360,3 +360,28 @@ char keyfind()
 	 minB=maxNum(bR,bG,blB);
 	 
 }
+
+
+void Sense(){
+	int rVal, gVal, bVal,R,G,B;
+	DDRC=0b00001110;
+	ADC_Init();
+	PORTC=0b00000010;
+	_delay_ms(200);
+	rVal=ADC_Read(0);
+	PORTC=0b00000100;
+	_delay_ms(200);
+	gVal=ADC_Read(0);
+	PORTC=0b00001000;
+	_delay_ms(200);
+	bVal=ADC_Read(0);
+	PORTC=0b00000000;
+	R=(rVal*255)/(maxR-minR);
+	G=(gVal*255)/(maxG-minG);
+	B=(bVal*255)/(maxB-minB);
+
+	
+	
+	
+	
+}
