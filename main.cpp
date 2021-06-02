@@ -385,3 +385,47 @@ void Sense(){
 	
 	
 }
+
+
+int main(void)
+{
+	LCD_Init();
+	LCD_String("Welcome!");
+	_delay_ms(100);
+	LCD_Clear();
+	char Num;
+	
+	while(1)
+	{
+		LCD_String("Select a mode");
+		_delay_ms(100);
+		LCD_Clear();
+		LCD_String_xy(0,0,"1-Calibrate");
+		LCD_String_xy(1,0,"2-Sense 3-Mode 3");
+		_delay_ms(200);
+		LCD_Clear();
+		
+		Num=keyfind();
+		
+		if (Num=='1'){
+			LCD_String("Calibrate");
+			_delay_ms(100);
+			LCD_Clear();
+			Calibrate();
+		}
+		
+		if(Num=='2'){
+			LCD_String("Sense");
+			_delay_ms(100);
+			LCD_Clear();
+			Sense();
+		}
+		
+		if(Num=='3'){
+			LCD_String('Input');
+			_delay_ms(100);
+			LCD_Clear();
+			
+		}
+	}
+}
