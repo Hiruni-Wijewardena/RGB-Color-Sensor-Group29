@@ -223,3 +223,82 @@ char keyfind()
 	 }
 	 return max;
 }
+
+
+void Calibrate()
+ {
+	 DDRC=0b00001110;
+	 ADC_Init();
+	 char num;
+	 int rR,rG,rB,gR,gG,gb,bR,bG,bB,blR,blG,blB,wR,wG,wB;
+	 
+	 LCD_String("RED");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 LCD_String("Press 0 to start");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 num= keyfind();
+	 if(num=='0'){
+		 PORTC=0b00000010;
+		 _delay_ms(200);
+		 rR=ADC_Read(0);
+		 PORTC=0b00000100;
+		 _delay_ms(200);
+		 rG=ADC_Read(0);
+		 PORTC=0b00001000;
+		 _delay_ms(200);
+		 rB=ADC_Read(0);
+		 PORTC=0b00000000;
+	 }
+	 LCD_String("RED Done");
+	 _delay_ms(100);
+	 LCD_Clear();
+
+	 
+	 LCD_String("Green");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 LCD_String("Press 0 to start");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 num= keyfind();
+	 if(num=='0'){
+		 PORTC=0b00000010;
+		 _delay_ms(200);
+		 gR=ADC_Read(0);
+		 PORTC=0b00000100;
+		 _delay_ms(200);
+		 gG=ADC_Read(0);
+		 PORTC=0b00001000;
+		 _delay_ms(200);
+		 gB=ADC_Read(0);
+		 PORTC=0b00000000;
+	 }
+	 LCD_String("GREEN Done");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 
+	 
+	 LCD_String("BLUE");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 LCD_String("Press 0 to start");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 num= keyfind();
+	 if(num=='0'){
+		 PORTC=0b00000010;
+		 _delay_ms(200);
+		 bR=ADC_Read(0);
+		 PORTC=0b00000100;
+		 _delay_ms(200);
+		 bG=ADC_Read(0);
+		 PORTC=0b00001000;
+		 _delay_ms(200);
+		 bB=ADC_Read(0);
+		 PORTC=0b00000000;
+	 }
+	 LCD_String("BLUE Done");
+	 _delay_ms(100);
+	 LCD_Clear();
