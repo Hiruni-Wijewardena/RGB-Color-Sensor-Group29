@@ -380,7 +380,17 @@ void Sense(){
 	G=(gVal*255)/(maxG-minG);
 	B=(bVal*255)/(maxB-minB);
 
+	if(R>255){
+		R=255;
+	}
 	
+	if(G>255){
+		g=255;
+	}
+	
+	if(B>255){
+		B=255;
+	}
 	
 	
 	
