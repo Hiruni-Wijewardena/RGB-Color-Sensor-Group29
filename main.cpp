@@ -196,3 +196,15 @@ char keyfind()
 		else
 		return(keypad[rowloc][3]);
 	} 
+
+
+ int minNum(int a, int b){
+	 int min;
+	 if(a>b){
+		 min=b;
+	 }
+	 if(a<b){
+		 min=a;
+	 }
+	 return min;
+ }
