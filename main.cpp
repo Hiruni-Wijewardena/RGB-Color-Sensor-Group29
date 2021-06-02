@@ -392,7 +392,27 @@ void Sense(){
 		B=255;
 	}
 	
+	if(R<255){
+		R=0;
+	}
 	
+	if(G<255){
+		G=0;
+	}
+	
+	if(B<255){
+		B=0;
+	}
+	
+	DDRB|=((1<<PORTB3)|(1<<PORTB2));
+	DDRD|=(1<<PORTD3);
+	OCR1B=R;
+	OCR2A=G;
+	OCR2B=B;
+	TCCR1A=(1<<WGM10)|(1<<COM1B1);
+	TCCR1B=(1<<CS10)|(1<<WGM12);
+	TCCR2A=(1<<WGM20)|(1<<WGM21)|(1<<COM2A1)|(1<<COM2B1);
+	TCCR2B=(1<<CS20);
 	
 }
 
