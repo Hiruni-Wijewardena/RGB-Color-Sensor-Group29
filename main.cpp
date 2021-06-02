@@ -190,7 +190,15 @@ void calibrate()
 	_delay_ms(100);
 	LCD_Clear();
 
-
+	rmax,gmax,bmax=rr,gg,bb;
+	if (br<gr){rmin=br;}
+	else{rmin=gr;}
+		
+	if (rg<bg){gmin=rg;}
+	else{gmin=bg;}
+		
+	if (rb<gb){bmin=rb;}
+	else{bmin=gb;}
 
 
 	
