@@ -417,6 +417,11 @@ void Sense(){
 }
 
 
+void Mode3(){
+	
+}
+
+
 int main(void)
 {
 	LCD_Init();
@@ -452,7 +457,7 @@ int main(void)
 		}
 		
 		if(Num=='3'){
-			LCD_String('Input');
+			LCD_String('Mode 3');
 			_delay_ms(100);
 			LCD_Clear();
 			
