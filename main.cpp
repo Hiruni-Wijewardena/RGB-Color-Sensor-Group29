@@ -225,7 +225,7 @@ char keyfind()
 }
 
 
-void Calibrate()
+ void Calibrate()
  {
 	 DDRC=0b00001110;
 	 ADC_Init();
@@ -302,3 +302,61 @@ void Calibrate()
 	 LCD_String("BLUE Done");
 	 _delay_ms(100);
 	 LCD_Clear();
+	 
+	 
+	 LCD_String("BLACK");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 LCD_String("Press 0 to start");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 num= keyfind();
+	 if(num=='0'){
+		 PORTC=0b00000010;
+		 _delay_ms(200);
+		 blR=ADC_Read(0);
+		 PORTC=0b00000100;
+		 _delay_ms(200);
+		 blG=ADC_Read(0);
+		 PORTC=0b00001000;
+		 _delay_ms(200);
+		 blB=ADC_Read(0);
+		 PORTC=0b00000000;
+	 }
+	 LCD_String("BLACK Done");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 
+	 
+	 LCD_String("WHITE");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 LCD_String("Press 0 to start");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 num= keyfind();
+	 if(num=='0'){
+		 PORTC=0b00000010;
+		 _delay_ms(200);
+		 wR=ADC_Read(0);
+		 PORTC=0b00000100;
+		 _delay_ms(200);
+		 wG=ADC_Read(0);
+		 PORTC=0b00001000;
+		 _delay_ms(200);
+		 wB=ADC_Read(0);
+		 PORTC=0b00000000;
+	 }
+	 LCD_String("WHITE Done");
+	 _delay_ms(100);
+	 LCD_Clear();
+	 
+	 maxR=minNum(rR,wR);
+	 maxG=minNum(gG,wG);
+	 maxB=minNum(bB,wB);
+	 
+	 minR=maxNum(rG,rB,blR);
+	 minG=maxNum(gR,gB,blG);
+	 minB=maxNum(bR,bG,blB);
+	 
+}
