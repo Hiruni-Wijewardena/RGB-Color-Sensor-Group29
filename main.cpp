@@ -208,3 +208,18 @@ char keyfind()
 	 }
 	 return min;
  }
+
+
+ int maxNum(int a, int b, int c){
+	 int max;
+	 if(a<b & b<c){
+		 max=c;
+	 }
+	 if(c<a & a<b){
+		 max=b;
+	 }
+	 if(b<c & c<a){
+		 max=a;
+	 }
+	 return max;
+}
