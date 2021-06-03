@@ -1,0 +1,488 @@
+/*
+ * RGB AVR_LCD.c
+ *
+ * Created: 5/11/2021 9:48:55 PM
+ * Author : Lenovo
+ */ 
+#include <stdio.h>
+#include <string.h>
+#define F_CPU 8000000UL			/* Define CPU Frequency e.g. here 8MHz */
+#include <avr/io.h>			/* Include AVR std. library file */
+#include <util/delay.h>			/* Include Delay header file */
+#define LCD_Dir  DDRB			/* Define LCD data port direction */
+#define LCD_Port PORTB			/* Define LCD data port */
+#define RS PB0				/* Define Register Select pin */
+#define EN PB1 				/* Define Enable signal pin */
+#define KEY_PRT PORTD
+#define KEY_DDR	DDRD
+#define KEY_PIN	PIND
+
+char greenshow[7];
+char blueshow[7];
+char redshow[7];
+int Red_max;
+int Blue_max;
+int Green_max;
+int red_white_max;
+int Blue_white_max;
+int Green_white_max;
+int Red_min[3];
+int Blue_min[3];
+int Green_min[3];
+int redmin;
+int bluemin;
+int greenmin;
+int   valr;
+int  valg;
+int   valb;
+int callib_values[3];
+
+unsigned char keypad[4][3] = {	{'1','2','3'},
+{'4','5','6'},
+{'7','8','9'},
+{'*','0','='}};
+
+unsigned char colloc, rowloc;
+
+char keyfind()
+{
+	while(1)
+	{
+		KEY_DDR = 0xF0;           /* set port direction as input-output */
+		KEY_PRT = 0xFF;
+
+		do
+		{
+			KEY_PRT &= 0x0F;      /* mask PORT for column read only */
+			asm("NOP");
+			colloc = (KEY_PIN & 0x0F); /* read status of column */
+		}while(colloc != 0x0F);
+		
+		do
+		{
+			do
+			{
+				_delay_ms(20);             /* 20ms key debounce time */
+				colloc = (KEY_PIN & 0x0F); /* read status of column */
+				}while(colloc == 0x0F);        /* check for any key press */
+				
+				_delay_ms (40);	            /* 20 ms key debounce time */
+				colloc = (KEY_PIN & 0x0F);
+			}while(colloc == 0x0F);
+
+			/* now check for rows */
+			KEY_PRT = 0xEF;            /* check for pressed key in 1st row */
+			asm("NOP");
+			colloc = (KEY_PIN & 0x0F);
+			if(colloc != 0x0F)
+			{
+				rowloc = 0;
+				break;
+			}
+
+			KEY_PRT = 0xDF;		/* check for pressed key in 2nd row */
+			asm("NOP");
+			colloc = (KEY_PIN & 0x0F);
+			if(colloc != 0x0F)
+			{
+				rowloc = 1;
+				break;
+			}
+			
+			KEY_PRT = 0xBF;		/* check for pressed key in 3rd row */
+			asm("NOP");
+			colloc = (KEY_PIN & 0x0F);
+			if(colloc != 0x0F)
+			{
+				rowloc = 2;
+				break;
+			}
+
+			KEY_PRT = 0x7F;		/* check for pressed key in 4th row */
+			asm("NOP");
+			colloc = (KEY_PIN & 0x0F);
+			if(colloc != 0x0F)
+			{
+				rowloc = 3;
+				break;
+			}
+		}
+
+		if(colloc == 0x0E)
+		return(keypad[rowloc][0]);
+		else if(colloc == 0x0D)
+		return(keypad[rowloc][1]);
+		else if(colloc == 0x0B)
+		return(keypad[rowloc][2]);
+		else
+		return(keypad[rowloc][3]);
+	}
+
+
+
+void LCD_Command( unsigned char cmnd )
+{
+	LCD_Port = (LCD_Port & 0x0F) | (cmnd & 0xF0); /* sending upper nibble */
+	LCD_Port &= ~ (1<<RS);		/* RS=0, command reg. */
+	LCD_Port |= (1<<EN);		/* Enable pulse */
+	_delay_us(1);
+	LCD_Port &= ~ (1<<EN);
+
+	_delay_us(200);
+
+	LCD_Port = (LCD_Port & 0x0F) | (cmnd << 4);  /* sending lower nibble */
+	LCD_Port |= (1<<EN);
+	_delay_us(1);
+	LCD_Port &= ~ (1<<EN);
+	_delay_ms(2);
+}
+
+
+void LCD_Char( unsigned char data )
+{
+	LCD_Port = (LCD_Port & 0x0F) | (data & 0xF0); /* sending upper nibble */
+	LCD_Port |= (1<<RS);		/* RS=1, data reg. */
+	LCD_Port|= (1<<EN);
+	_delay_us(1);
+	LCD_Port &= ~ (1<<EN);
+
+	_delay_us(200);
+
+	LCD_Port = (LCD_Port & 0x0F) | (data << 4); /* sending lower nibble */
+	LCD_Port |= (1<<EN);
+	_delay_us(1);
+	LCD_Port &= ~ (1<<EN);
+	_delay_ms(2);
+}
+
+void LCD_Init (void)			/* LCD Initialize function */
+{
+	LCD_Dir = 0xFF;			/* Make LCD port direction as o/p */
+	_delay_ms(20);			/* LCD Power ON delay always >15ms */
+	
+	LCD_Command(0x02);		/* send for 4 bit initialization of LCD  */
+	LCD_Command(0x28);              /* 2 line, 5*7 matrix in 4-bit mode */
+	LCD_Command(0x0c);              /* Display on cursor off*/
+	LCD_Command(0x06);              /* Increment cursor (shift cursor to right)*/
+	LCD_Command(0x01);              /* Clear display screen*/
+	_delay_ms(2);
+}
+
+
+void LCD_String (char *str)		/* Send string to LCD function */
+{
+	int i;
+	for(i=0;str[i]!=0;i++)		/* Send each char of string till the NULL */
+	{
+		LCD_Char (str[i]);
+	}
+}
+
+
+
+
+void LCD_String_xy (char row, char pos, char *str)	/* Send string to LCD with xy position */
+{
+	if (row == 0 && pos<16)
+	LCD_Command((pos & 0x0F)|0x80);	/* Command of first row and required position<16 */
+	else if (row == 1 && pos<16)
+	LCD_Command((pos & 0x0F)|0xC0);	/* Command of first row and required position<16 */
+	LCD_String(str);		/* Call LCD string function */
+}
+
+void LCD_Clear()
+{
+	LCD_Command (0x01);		/* Clear display */
+	_delay_ms(2);
+	LCD_Command (0x80);		/* Cursor at home position */
+}
+
+
+void pwm_init(){
+	
+	DDRB |= ((1<<PORTB3)|(1<<PORTB2));
+	DDRD |= (1<<PORTD3);
+	TCCR1A = (1<<WGM10) | (1<<COM1B1)  ;
+	TCCR1B = (1<<CS12) | (1<<WGM12);
+	TCCR2A = (1<<WGM20) | (1<<WGM21) | (1<<COM2A1) | (1<<COM2B1);
+	TCCR2B = (1<<CS22);
+	OCR1B = valr;        //red
+	OCR2A =valg;      //green
+	OCR2B = valb;   //blue
+	
+}
+
+
+int callibration(){
+	
+	int i = 0;
+	int values[3];
+	
+	float green = 0;
+	float blue = 0;
+	float red = 0;
+	int counter = 0 ;
+	while (1){
+		i=i+1;
+		if (i==1){
+			PORTC = 1<< PORTC1;
+			ADCSRA |= (1<<ADSC);
+			_delay_ms(50);
+			green = green + ADC ;  //green LDR val when sensing
+			_delay_ms(130);
+			
+			PORTC = 0;
+			
+		}
+		if (i==2){
+			PORTC = 1<< PORTC2;
+			ADCSRA |= (1<<ADSC);
+			_delay_ms(50);
+			blue =  blue + ADC ;  //blue LDR when sensing
+			_delay_ms(130);
+			
+			PORTC = 0;
+			
+		}
+		if (i==3){
+			PORTC = 1<< PORTC3;
+			ADCSRA |= (1<<ADSC);
+			_delay_ms(50);
+			red = red + ADC ;  //red LDR when sensing
+			_delay_ms(130);
+			
+			PORTC = 0;
+			
+			i=0;
+			counter = counter+1 ;
+			
+		}
+		
+		if (counter == 4){
+			values[0] = (red/counter) ;
+			values[1] = (blue/counter)  ;
+			values[2] = (green/counter) ;
+			
+			return *values;
+			
+			
+		}}}
+
+
+int find_max_of_min(int arr[3]){
+
+	int i;
+	for(i=0;i<2;i++){
+		
+		if (arr[i]>arr[i+1]){
+			arr[i+1]=arr[i];
+		
+		}
+		
+	if (i==1){
+		return arr[i+1];
+			
+	}}}
+	                                                 
+
+int main()
+{
+    char keypressed  ;
+	LCD_Init();			/* Initialization of LCD*/
+    DDRC = 0; //TAking port C as input
+	ADMUX |= (1<<REFS0);     //Setting reference of ADC
+	ADCSRA |= (1<<ADEN)|(1<< ADATE)|(1<<ADPS2)|(1<<ADPS1);
+	ADCSRB = 0; 
+	float LDR_val;
+	_delay_ms(1);
+	LCD_String("GROUP 29");	/* Write string on 1st line of LCD*/
+	LCD_Command(0xC0);		/* Go to 2nd line*/
+	LCD_String("WELCOME");	/* Write string on 2nd line*/
+	_delay_ms(1000);
+	LCD_Clear();
+	LCD_String("Mode: 1.Sense");
+	LCD_String_xy (1,0,"2.callib");
+	LCD_String_xy (1,9,"3.input");
+	
+	LCD_Command(0xC0);	
+	LCD_Clear();
+	int marker;
+	
+while(1){
+	
+  keypressed = keyfind();
+  
+	if (keypressed == '0' ){                  //RESET
+			 LCD_Clear();
+			 LCD_String("Mode: 1.Sense");
+			 LCD_String_xy (1,0,"2.callib");
+			 LCD_String_xy (1,9,"3.input");
+			 LCD_Command(0xC0);
+			 
+		}
+			
+	if (keypressed == '1' ){
+		
+		LCD_Clear();                           //CALLIBRATION ON RED
+		LCD_String("CALIIBRATING RED...");
+		 *callib_values = callibration();
+		Red_max=callib_values[0];
+		Blue_min[0] = callib_values[1];
+		Green_min[0] = callib_values[2];
+		LCD_Clear();
+		 }
+		 
+		 
+	if (keypressed == '2' ){                  //CALLIBRATION ON BLUE
+			 
+			 LCD_Clear();
+			 LCD_String("CALIIBRATING BLUE...");
+			  *callib_values = callibration();
+			 Red_min[0] = callib_values[0];
+			 Blue_max = callib_values[1];
+			 Green_min[1] = callib_values[2];
+			 LCD_Clear();
+		
+		}
+		
+	if (keypressed == '3' ){
+		
+		LCD_Clear();
+		LCD_String("CALIIBRATING GREEN...");   //CALLIBRATION ON GREEN
+		 *callib_values = callibration();
+		Red_min[1] = callib_values[0];
+		Blue_min[1] = callib_values[1];
+		Green_max = callib_values[2];
+		LCD_Clear();
+		
+	}
+
+    if (keypressed == '4' ){
+	  
+	  LCD_Clear();
+	  LCD_String("CALIIBRATING BLACK...") ;  //CALLIBRATION ON GREEN
+	  *callib_values = callibration();
+	  Red_min[2] = callib_values[0];
+	  Blue_min[2] = callib_values[1];
+	  Green_min[2] = callib_values[2];
+	  LCD_Clear();
+	  
+  }
+	
+	
+	if (keypressed == '5' ){
+		
+		LCD_Clear();
+		LCD_String("CALIIBRATING WHITE...") ;  //CALLIBRATION ON WHITE
+		*callib_values = callibration();
+		 red_white_max = callib_values[0];
+		Blue_white_max = callib_values[1];
+		Green_white_max = callib_values[2];
+		LCD_Clear();
+		
+	}
+		
+		
+	if (keypressed == '6') {                  //Sensing Mode
+					float G ;
+					float B  ; 
+					float R ;
+					int i = 0;
+					float green = 0;
+					float blue = 0;
+					float red = 0;
+					int counter = 0 ;
+					while (1){
+						i=i+1;
+						if (i==1){
+							PORTC = 1<< PORTC1;
+							ADCSRA |= (1<<ADSC);
+							_delay_ms(50);
+							green = green + ADC ;  //green LDR val when sensing
+							_delay_ms(130);
+							
+							PORTC = 0;
+							
+						}
+						if (i==2){
+							PORTC = 1<< PORTC2;
+							ADCSRA |= (1<<ADSC);
+							_delay_ms(50);
+							blue =  blue + ADC ;  //blue LDR when sensing
+							_delay_ms(130);
+							
+							PORTC = 0;
+							
+						}
+						if (i==3){
+							PORTC = 1<< PORTC3;
+							ADCSRA |= (1<<ADSC);
+							_delay_ms(50);
+							red = red + ADC ;  //red LDR when sensing
+							_delay_ms(130);
+							
+							PORTC = 0;
+							
+							i=0;
+							counter = counter+1 ;
+							
+						}
+						
+						if (counter == 6){
+							
+							redmin = find_max_of_min(Red_min);
+							bluemin = find_max_of_min(Blue_min);
+							greenmin = find_max_of_min(Green_min);
+							
+							if (red_white_max < Red_max){
+								Red_max = red_white_max;
+							}
+							
+							if (Blue_white_max < Blue_max){
+								Blue_max = Blue_white_max;
+							}
+							
+							if (Green_white_max < Green_max){
+								Green_max = Blue_white_max;
+							}
+							
+							G = (255*((green/counter)-greenmin))/(Green_max-greenmin) ;
+							B = (255*((blue/counter)-bluemin))/(Blue_max-bluemin) ;
+							R = (255*((red/counter)-redmin))/(Red_max-redmin) ;  ;
+							
+							if (R>255){
+								R=255;
+							}
+							
+							if (G>255){
+								G=255;
+							}
+							
+							if (B>255){
+								B=255;
+							}
+							
+							valg=G;
+							valr=R;
+							valb=B;
+							LCD_Clear();
+							sprintf(redshow, "%f",R);
+							dtostrf(R, 4 , 1 , redshow);
+							sprintf(greenshow, "%f",G);
+							dtostrf(G, 4 , 1 , greenshow);
+							sprintf(blueshow, "%f",B);
+							dtostrf(B, 4 , 1 , blueshow);
+							LCD_String("R=");
+							LCD_String(redshow);
+							LCD_String_xy(0,8,"G=");
+							LCD_String(greenshow);
+							LCD_String_xy(1,0,"B="); 
+							LCD_String(blueshow);
+							pwm_init();
+							_delay_ms(4000);
+							TCCR2B = 0 ;TCCR1A = 0 ;TCCR1B = 0 ;TCCR2A = 0 ;
+							break ;
+							
+							
+}}}}}
+
