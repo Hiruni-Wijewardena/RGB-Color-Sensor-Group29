@@ -2,6 +2,7 @@
 #include <avr/io.h>			/* Include AVR std. library file */
 #include <util/delay.h>			/* Include Delay header file */
 #include <stdlib.h>
+#define delay 2
 
 #define LCD_Dir  DDRB			/* Define LCD data port direction */
 #define LCD_Port PORTB			/* Define LCD data port */
@@ -362,6 +363,30 @@ char keyfind()
 }
 
 
+int OCR_Value(int val){
+	return 255 - val;
+}
+void PWM_init()
+{
+	/*set fast PWM mode with non-inverted output*/
+	TCCR2A = (1<<WGM20) | (1<<WGM21) | (1<<COM2A1) | (1<<COM2B1);
+	TCCR2B = (1<<CS20);
+	DDRC =  (1 << PINC4) | (1 <<PINC5); /*set OC0 pin and 2 digital pins as output*/
+	DDRB =  (1 << PINB3) ;
+}
+void RGB(int r, int g, int b){
+	PORTC = (0<<PORTC4) | (0<<PORTC5);
+	OCR2A=OCR_Value(r);
+	_delay_ms(delay);
+	PORTC = (0<<PORTC4) | (1<<PORTC5);
+	OCR2A=OCR_Value(b);
+	_delay_ms(delay);
+	PORTC = (1<<PORTC4) | (0<<PORTC5);
+	OCR2A=OCR_Value(g);
+	_delay_ms(delay);
+}
+
+
 void Sense(){
 	int rVal, gVal, bVal,R,G,B;
 	DDRC=0b00001110;
@@ -404,15 +429,8 @@ void Sense(){
 		B=0;
 	}
 	
-	DDRB|=((1<<PORTB3)|(1<<PORTB2));
-	DDRD|=(1<<PORTD3);
-	OCR1B=R;
-	OCR2A=G;
-	OCR2B=B;
-	TCCR1A=(1<<WGM10)|(1<<COM1B1);
-	TCCR1B=(1<<CS10)|(1<<WGM12);
-	TCCR2A=(1<<WGM20)|(1<<WGM21)|(1<<COM2A1)|(1<<COM2B1);
-	TCCR2B=(1<<CS20);
+	RGB(R,G,B);
+	
 	
 }
 
@@ -429,6 +447,8 @@ int main(void)
 	_delay_ms(100);
 	LCD_Clear();
 	char Num;
+	PWM_init();
+	
 	
 	while(1)
 	{
