@@ -43,12 +43,16 @@ double getnum()
 	char key;
 	double ikey;
 	double mult;
-	
+	char numberr;
 	for (double i=0;i<=2;i++)
 	{
 		
 		key=keyfind();
 		ikey = key-'0';
+		itoa (ikey,numberr,10);
+		LCD_String_xy(0,0,numberr);
+		_delay_ms(300);
+		LCD_Clear();
 		mult = pow(10,(2-i));
 		num+= mult*(ikey);
 		
