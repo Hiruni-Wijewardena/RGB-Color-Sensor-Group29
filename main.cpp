@@ -462,6 +462,13 @@ int main(void)
 		
 		Num=keyfind();
 		
+		if (Num=='0'){
+			LCD_String_xy(0,0,"1-Calibrate");
+			LCD_String_xy(1,0,"2-Sense 3-Mode 3");
+			delay_ms(200);
+			LCD_Clear();
+		}
+		
 		if (Num=='1'){
 			LCD_String("Calibrate");
 			_delay_ms(100);
@@ -481,6 +488,11 @@ int main(void)
 			_delay_ms(100);
 			LCD_Clear();
 			
+		}
+		
+		if(Num!=0 & Num!=1 & Num!=2 & Num!=3){
+			LCD_String_xy(0,0,'Enter a valid ');
+			LCD_String_xy(1,0,'number');
 		}
 	}
 }
