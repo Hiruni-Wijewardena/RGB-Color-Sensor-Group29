@@ -72,8 +72,8 @@ bool validate(int number1,int number2,int number3)
 	}
 	else
 	{
-		LCD_Clear();
-		LCD_String_xy(0,0, "DONE");
+		//LCD_Clear();
+		LCD_String_xy(1,11, "DONE");
 		return true;
 	}
 }
@@ -83,23 +83,25 @@ bool validate(int number1,int number2,int number3)
 	 double valuer,valueg,valueb;
 	 char number[3];
 	 bool valid;
- 
+	 LCD_String_xy (0, 0, "R=");
 	 valuer = getnum();
  
 	 itoa (valuer,number,10);
-	 LCD_String_xy (0, 0, "r=");
+	 //LCD_String_xy (0, 0, "R=");
 	 LCD_String_xy (0, 3, number);
- 
+	 
+	 LCD_String_xy (0, 8, "G=");
 	 valueg = getnum();
  
 	 itoa (valueg,number,10);
-	 LCD_String_xy (0, 8, "g=");
+	 //LCD_String_xy (0, 8, "G=");
 	 LCD_String_xy (0, 11, number);
  
+	 LCD_String_xy (1, 0, "B=");
 	 valueb = getnum();
 	
 	 itoa (valueb,number,10);
-	 LCD_String_xy (1, 0, "b=");
+	 //LCD_String_xy (1, 0, "B=");
 	 LCD_String_xy (1, 3, number);
 	 _delay_ms(100);
  
@@ -280,24 +282,24 @@ void sense()
 	int rsi,gsi,bsi;
 	
 	LCD_Clear();
-	LCD_String("Sensing...");
+	LCD_String("SENSING...");
 
 	DDRC = 0b00001110;
 	PORTC = 0b00000010;
 	_delay_ms(delay);
 	rsi=ADC_Read(0);
-	//itoa(rsi,rs,10);
+	itoa(rsi,rs,10);
 
 	PORTC = 0b00000100;
 	_delay_ms(delay);
 	gsi=ADC_Read(0);
-	//itoa(gsi,gs,10);
+	itoa(gsi,gs,10);
 
 
 	PORTC = 0b00001000;
 	_delay_ms(delay);
 	bsi=ADC_Read(0);
-	//itoa(bsi,bs,10);
+	itoa(bsi,bs,10);
 	
 	PORTC = 0b00000000;
 	
@@ -311,13 +313,13 @@ void sense()
 
 	LCD_Clear();
 	LCD_String("R- ");
-	LCD_String(rrf);
+	LCD_String(rs);
 	LCD_String("    ");
 	LCD_String("G- ");
-	LCD_String(ggf);
+	LCD_String(gs);
 	LCD_Command(0xC0);
 	LCD_String("B- ");
-	LCD_String(bbf);
+	LCD_String(bs);
 	LCD_String("  ");
 	
 	
@@ -347,7 +349,7 @@ int main(void)
 			{
 			LCD_Clear();
 			input();
-			//_delay_ms(300);
+			_delay_ms(300);
 			}
 		else if (mode =='2')
 			{
