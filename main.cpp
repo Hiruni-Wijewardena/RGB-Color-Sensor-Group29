@@ -13,6 +13,8 @@
 #include <math.h>
 #include <avr/interrupt.h>
 
+int rmax,gmax,bmax,rmin,gmin,bmin;
+bool calib = false;
 void ADC_Init()
 {
 	DDRC=0x0;			/* Make ADC port as input */
@@ -44,7 +46,7 @@ double getnum()
 	char key;
 	double ikey;
 	long mult;
-	char numberr[3];
+	//char numberr[3];
 	for (double i=0;i<=2;i++)
 	{
 		
@@ -108,24 +110,27 @@ bool validate(int number1,int number2,int number3)
 	 }
 	 else if (valid == true)
 	 {
-	 
-		TCCR2A = (1<<WGM20) | (1<<WGM21) | (1<<COM2A1) | (1<<COM2B1);
-		TCCR2B = (1<<CS20);
-		DDRC =   (1 << PINC4) | (1 <<PINC5); 
-		DDRB =  (1 << PINB2) | (1 << PINB3) ;
+		while(1)
+		{
+			
+			TCCR2A = (1<<WGM20) | (1<<WGM21) | (1<<COM2A1) | (1<<COM2B1);
+			TCCR2B = (1<<CS20);
+			DDRC =   (1 << PINC4) | (1 <<PINC5); 
+			DDRB =  (1 << PINB2) | (1 << PINB3) ;
 		
-		PORTB = (1<<PORTB2);
-		PORTC = (0<<PORTC4) | (0<<PORTC5);
-		OCR2A=valuer;
-		_delay_ms(100);
-		PORTB = (0<<PORTB2);
-		PORTC = (1<<PORTC4) | (0<<PORTC5);
-		OCR2A=valueg;
-		_delay_ms(100);
-		PORTB = (0<<PORTB2);
-		PORTC = (0<<PORTC4) | (1<<PORTC5);
-		OCR2A=valueb;
-		_delay_ms(100);
+			PORTB = (1<<PORTB2);
+			PORTC = (0<<PORTC4) | (0<<PORTC5);
+			OCR2A=valuer;
+			_delay_ms(5);
+			PORTB = (0<<PORTB2);
+			PORTC = (1<<PORTC4) | (0<<PORTC5);
+			OCR2A=valueg;
+			_delay_ms(5);
+			PORTB = (0<<PORTB2);
+			PORTC = (0<<PORTC4) | (1<<PORTC5);
+			OCR2A=valueb;
+			_delay_ms(5);
+		}
 	 }
      
 	 
@@ -179,7 +184,7 @@ bool validate(int number1,int number2,int number3)
 void calibrate()
 {
 	int r[3],g[3],b[3],w[3],bl[3];
-	int rmax,gmax,bmax,rmin,gmin,bmin;
+	//int rmax,gmax,bmax,rmin,gmin,bmin;
 	int rR,rG,rB,gR,gG,gB,bR,bG,bB,blR,blG,blB,wR,wG,wB;;
 	char key;
 	LCD_String_xy (0, 0, "RED COLOUR");
@@ -264,12 +269,56 @@ void calibrate()
 	gmin=maxNum(gR,gB,blG);
 	bmin=maxNum(bR,bG,blB);
 
-
+calib= true;
 	
 }
 
 void sense()
 {
+	int delay =100,value,rr,gg,bb;
+	char rs[5],gs[5],bs[5],rrf[5],ggf[5],bbf[5];
+	int rsi,gsi,bsi;
+	
+	LCD_Clear();
+	LCD_String("Sensing...");
+
+	DDRC = 0b00001110;
+	PORTC = 0b00000010;
+	_delay_ms(delay);
+	rsi=ADC_Read(0);
+	//itoa(rsi,rs,10);
+
+	PORTC = 0b00000100;
+	_delay_ms(delay);
+	gsi=ADC_Read(0);
+	//itoa(gsi,gs,10);
+
+
+	PORTC = 0b00001000;
+	_delay_ms(delay);
+	bsi=ADC_Read(0);
+	//itoa(bsi,bs,10);
+	
+	PORTC = 0b00000000;
+	
+
+	rr= (rsi-rmin)*255/(rmax-rmin);
+	itoa(rr,rrf,10);
+	gg= (gsi-gmin)*255/(gmax-gmin);
+	itoa(gg,ggf,10);
+	bb= (bsi-bmin)*255/(bmax-bmin);
+	itoa(bb,bbf,10);
+
+	LCD_Clear();
+	LCD_String("R- ");
+	LCD_String(rrf);
+	LCD_String("    ");
+	LCD_String("G- ");
+	LCD_String(ggf);
+	LCD_Command(0xC0);
+	LCD_String("B- ");
+	LCD_String(bbf);
+	LCD_String("  ");
 	
 	
 }
@@ -302,7 +351,18 @@ int main(void)
 			}
 		else if (mode =='2')
 			{
-			sense();
+			if (calib==true)
+				{
+				sense();
+				_delay_ms(1000);
+				}
+			else
+				{
+				LCD_Clear();
+				LCD_String_xy (0, 0,"NOT CALIBRATED");	
+				_delay_ms(300);		
+				}
+				
 			}	
 			
 		else if (mode == '3')
@@ -323,6 +383,9 @@ int main(void)
 	}
 ISR (INT1_vect)
 {
+	/* turn off the LEDs and return to main*/
+	PORTC &= 0b11000001;
+	PORTB &= ~(1<<PORTB2);  
 	main();	
 }
 
