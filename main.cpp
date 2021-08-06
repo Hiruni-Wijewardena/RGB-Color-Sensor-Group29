@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <avr/interrupt.h>
 
 void ADC_Init()
 {
@@ -76,6 +77,7 @@ bool validate(int number1,int number2,int number3)
 }
  void input()
  {
+	
 	 double valuer,valueg,valueb;
 	 char number[3];
 	 bool valid;
@@ -93,6 +95,7 @@ bool validate(int number1,int number2,int number3)
 	 LCD_String_xy (0, 11, number);
  
 	 valueb = getnum();
+	
 	 itoa (valueb,number,10);
 	 LCD_String_xy (1, 0, "b=");
 	 LCD_String_xy (1, 3, number);
@@ -106,18 +109,27 @@ bool validate(int number1,int number2,int number3)
 	 else if (valid == true)
 	 {
 	 
-		 DDRB|=((1<<PORTB3)|(1<<PORTB2));
-		 DDRD|=(1<<PORTD3); /*set OC0 pin as output*/
-		 OCR1B = valuer;
-		 OCR2A =valueg;
-		 OCR2B = valueb;
-		 TCCR1A = (1<<WGM10) | (1<<COM1B1) ;
-		 TCCR1B = (1<<CS10) | (1<<WGM12);
-		 TCCR2A = (1<<WGM20) | (1<<WGM21) | (1<<COM2A1)| (1<<COM2B1) ;
-		 TCCR2B = (1<<CS20);
-	 
+		TCCR2A = (1<<WGM20) | (1<<WGM21) | (1<<COM2A1) | (1<<COM2B1);
+		TCCR2B = (1<<CS20);
+		DDRC =   (1 << PINC4) | (1 <<PINC5); 
+		DDRB =  (1 << PINB2) | (1 << PINB3) ;
+		
+		PORTB = (1<<PORTB2);
+		PORTC = (0<<PORTC4) | (0<<PORTC5);
+		OCR2A=valuer;
+		_delay_ms(100);
+		PORTB = (0<<PORTB2);
+		PORTC = (1<<PORTC4) | (0<<PORTC5);
+		OCR2A=valueg;
+		_delay_ms(100);
+		PORTB = (0<<PORTB2);
+		PORTC = (0<<PORTC4) | (1<<PORTC5);
+		OCR2A=valueb;
+		_delay_ms(100);
 	 }
- }
+     
+	 
+}
  int values()
  {
 	 int num[3];
@@ -213,6 +225,9 @@ void sense()
 	
 int main(void)
 {
+        EICRA |= 0b00001100;
+		EIMSK |= 0b00000010;
+		sei();	
 		LCD_Init();
 		LCD_String_xy (0, 5,"WELCOME!");
 		LCD_String_xy (1, 0,"Select a mode");
@@ -231,7 +246,7 @@ int main(void)
 			{
 			LCD_Clear();
 			input();
-			_delay_ms(300);
+			//_delay_ms(300);
 			}
 		else if (mode =='2')
 			{
@@ -254,6 +269,8 @@ int main(void)
 		}
 
 	}
-
-
+ISR (INT1_vect)
+{
+	main();	
+}
 
