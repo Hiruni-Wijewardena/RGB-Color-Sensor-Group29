@@ -319,10 +319,34 @@ void sense()
 	
     /* mapping the sensor readings */
 	rr= (rsi-rmin)*255/(rmax-rmin);
+	if (rr>255)
+	{
+		rr = 255;
+	}
+	else if (rr<0)
+	{
+		rr = 0;
+	}
 	itoa(rr,rrf,10);
 	gg= (gsi-gmin)*255/(gmax-gmin);
+	if (gg>255)
+	{
+		gg = 255;
+	}
+	else if (gg<0)
+	{
+		gg = 0;
+	}
 	itoa(gg,ggf,10);
 	bb= (bsi-bmin)*255/(bmax-bmin);
+	if (bb>255)
+	{
+		bb = 255;
+	}
+	else if (bb<0)
+	{
+		bb = 0;
+	}
 	itoa(bb,bbf,10);
 
 	/* showing the outputs in the LCD Display */
