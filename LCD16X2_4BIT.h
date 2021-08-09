@@ -55,7 +55,7 @@ void LCD_Char( unsigned char data )
 
 void LCD_Init (void)			/* LCD Initialize function */
 {
-	LCD_Dir = 0b11110011;			/* Make LCD port direction as o/p */
+	LCD_Dir = 0b11111111;			/* Make LCD port direction as o/p */
 	_delay_ms(20);			/* LCD Power ON delay always >15ms */
 	
 	LCD_Command(0x02);		/* send for 4 bit initialization of LCD  */
